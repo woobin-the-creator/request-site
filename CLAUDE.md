@@ -302,3 +302,11 @@ request-site/
 ---
 
 *규칙이 변경되면 이 파일과 해당 `docs/*.md`를 반드시 함께 업데이트한다.*
+## Context Isolation (Subagent Rule)
+
+Keep the main context window lean. When this environment provides subagent tooling (Claude Code `Task`, OpenCode `task`/`agent`, Hermes `delegate_task`, Codex collab, or equivalent), use it to isolate context-heavy work. If no subagent tooling exists, ignore this section.
+
+1. **Delegate large read-only output.** Route codebase/document exploration whose raw output is expected to exceed a few thousand tokens (multi-file reads, broad searches, document/log dumps) and browser screenshot loops (Playwright etc.) to a subagent. Quick lookups of one or two files stay in the main context.
+2. **Dispatch self-contained prompts.** Subagents have no access to this conversation. Every dispatch must carry the goal, exact paths or search terms, constraints, and the expected return format.
+3. **Return summaries with references.** Subagents report a concise summary with `path:line` references (plus one final screenshot for visual checks) so specifics can be re-read on demand without re-exploration.
+4. **Verify in the main context.** Final user-facing verification — last diff review and final screenshot — is performed directly by the main agent. Subagent reports are input, not proof.
